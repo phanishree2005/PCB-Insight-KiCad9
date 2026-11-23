@@ -173,9 +173,16 @@ class SExprParserAdapter(BoardAdapter):
             min_y, max_y = min(ys), max(ys)
             width = max(0.0, max_x - min_x)
             height = max(0.0, max_y - min_y)
-            bbox = (round(min_x, 3), round(min_y, 3), round(max_x, 3), round(max_y, 3))
-            dimensions = (round(width, 3), round(height, 3))
+            if width > 0.0 and height > 0.0:
+                bbox = (round(min_x, 3), round(min_y, 3), round(max_x, 3), round(max_y, 3))
+                dimensions = (round(width, 3), round(height, 3))
+                has_edge_cuts = True
+            else:
+                has_edge_cuts = False
+                bbox = (0.0, 0.0, 0.0, 0.0)
+                dimensions = (0.0, 0.0)
         else:
+            has_edge_cuts = False
             bbox = (0.0, 0.0, 0.0, 0.0)
             dimensions = (0.0, 0.0)
 
@@ -436,7 +443,10 @@ class SExprParserAdapter(BoardAdapter):
         )
 
     def _collect_outline_points(self, node: List[Any], points: List[Tuple[float, float]]):
-        """Extracts coordinate points from graphical elements on Edge.Cuts layer."""
+        """Extracts coordinate points from graphical elements on Edge.Cuts layer.
+        
+        Supports gr_line, gr_rect, gr_circle, gr_arc, gr_poly, and gr_curve.
+        """
         # Find layer
         layer = ""
         for item in node[1:]:
@@ -456,9 +466,48 @@ class SExprParserAdapter(BoardAdapter):
                     except ValueError:
                         pass
         elif tag == "gr_circle":
+            center: Optional[Tuple[float, float]] = None
+            end_pt: Optional[Tuple[float, float]] = None
             for item in node[1:]:
-                if isinstance(item, list) and len(item) >= 3 and item[0] in ("center", "end"):
+                if isinstance(item, list) and len(item) >= 3:
+                    if item[0] == "center":
+                        try:
+                            center = (float(item[1]), float(item[2]))
+                        except ValueError:
+                            pass
+                    elif item[0] == "end":
+                        try:
+                            end_pt = (float(item[1]), float(item[2]))
+                        except ValueError:
+                            pass
+            if center and end_pt:
+                r = math.hypot(end_pt[0] - center[0], end_pt[1] - center[1])
+                points.append((center[0] - r, center[1] - r))
+                points.append((center[0] + r, center[1] + r))
+            elif center:
+                points.append(center)
+        elif tag == "gr_arc":
+            for item in node[1:]:
+                if isinstance(item, list) and len(item) >= 3 and item[0] in ("start", "mid", "end"):
                     try:
                         points.append((float(item[1]), float(item[2])))
                     except ValueError:
                         pass
+        elif tag == "gr_poly":
+            for item in node[1:]:
+                if isinstance(item, list) and item[0] == "pts":
+                    for pt_node in item[1:]:
+                        if isinstance(pt_node, list) and len(pt_node) >= 3 and pt_node[0] == "xy":
+                            try:
+                                points.append((float(pt_node[1]), float(pt_node[2])))
+                            except ValueError:
+                                pass
+        elif tag == "gr_curve":
+            for item in node[1:]:
+                if isinstance(item, list) and item[0] == "pts":
+                    for pt_node in item[1:]:
+                        if isinstance(pt_node, list) and len(pt_node) >= 3 and pt_node[0] == "xy":
+                            try:
+                                points.append((float(pt_node[1]), float(pt_node[2])))
+                            except ValueError:
+                                pass

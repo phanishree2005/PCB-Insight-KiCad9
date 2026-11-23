@@ -149,6 +149,13 @@ class BoardData:
     metadata: Dict[str, str] = field(default_factory=dict)
 
     @property
+    def dimensions_display(self) -> str:
+        """Formatted dimensions or explicit missing outline message per Requirement 4."""
+        if self.has_edge_cuts and self.dimensions_mm[0] > 0.0 and self.dimensions_mm[1] > 0.0:
+            return f"{self.dimensions_mm[0]:.1f} × {self.dimensions_mm[1]:.1f} mm"
+        return "Not available – board outline missing"
+
+    @property
     def component_count(self) -> int:
         return len(self.components)
 

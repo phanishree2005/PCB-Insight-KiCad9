@@ -41,7 +41,7 @@ def main(argv: Optional[list] = None) -> int:
             print(f" PCB INSIGHT v{__version__} – Design Analysis Report")
             print("=" * 65)
             print(f" Board Name  : {result.board.name}")
-            print(f" Dimensions  : {result.board.dimensions_mm[0]} x {result.board.dimensions_mm[1]} mm")
+            print(f" Dimensions  : {result.board.dimensions_display}")
             print(f" Components  : {result.board.component_count}")
             print(f" Nets        : {result.board.net_count}")
             print(f" Tracks/Vias : {result.board.track_count} tracks, {result.board.via_count} vias")

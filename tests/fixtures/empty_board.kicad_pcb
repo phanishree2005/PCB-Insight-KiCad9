@@ -1,0 +1,14 @@
+(kicad_pcb
+  (version 20240108)
+  (generator "kicad")
+  (generator_version "9.0")
+  (general
+    (thickness 1.6)
+  )
+  (paper "A4")
+  (layers
+    (0 "F.Cu" signal)
+    (31 "B.Cu" signal)
+    (48 "Edge.Cuts" user)
+  )
+)

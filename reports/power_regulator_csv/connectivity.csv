@@ -1,0 +1,6 @@
+NetName,NetCode,PadCount,IsPower,IsGround,ConnectedPads
+GND,1,6,NO,YES,U1.1;C1.2;C2.2;D2.1;J1.2;J2.2
++3V3,2,5,YES,NO,U1.2;U1.4;C2.1;R1.1;J2.1
+VIN,3,3,NO,NO,U1.3;C1.1;D1.1
+VRAW,4,2,NO,NO,D1.2;J1.1
+Net-(D2-Pad2),5,2,NO,NO,R1.2;D2.2

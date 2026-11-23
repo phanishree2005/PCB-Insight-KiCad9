@@ -245,7 +245,7 @@ def generate_html_report(result: AnalysisResult, output_path: Union[str, Path]) 
         </div>
         <div class="card">
             <h3>Dimensions</h3>
-            <div class="value">{board.dimensions_mm[0]} &times; {board.dimensions_mm[1]} mm</div>
+            <div class="value">{board.dimensions_display}</div>
         </div>
         <div class="card">
             <h3>Copper Layers</h3>

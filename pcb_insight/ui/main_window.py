@@ -323,8 +323,14 @@ class PCBInsightUI(tk.Tk):
             canvas.create_rectangle(bx1, by1, bx2, by2, outline="#facc15", width=2)
             canvas.create_text(
                 bx1 + 10, by1 + 10,
-                text=f"Edge.Cuts Boundary: {board.dimensions_mm[0]} x {board.dimensions_mm[1]} mm",
+                text=f"Edge.Cuts Boundary: {board.dimensions_display}",
                 fill="#facc15", anchor="nw", font=("Segoe UI", 8)
+            )
+        else:
+            canvas.create_text(
+                20, 20,
+                text="⚠ Edge.Cuts Boundary: Not available – board outline missing",
+                fill="#f87171", anchor="nw", font=("Segoe UI", 9, "bold")
             )
 
         # 2. Routed Tracks (Copper Wires)
@@ -399,7 +405,7 @@ class PCBInsightUI(tk.Tk):
         self.lbl_info.config(text=str(result.info_count))
         self.lbl_comps.config(text=str(board.component_count))
         self.lbl_nets.config(text=str(board.net_count))
-        self.lbl_dims.config(text=f"{board.dimensions_mm[0]} × {board.dimensions_mm[1]} mm")
+        self.lbl_dims.config(text=board.dimensions_display)
 
         # Populate Findings Tree
         self.tree_findings.delete(*self.tree_findings.get_children())

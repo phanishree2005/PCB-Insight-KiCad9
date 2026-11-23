@@ -1,0 +1,9 @@
+Reference,Value,Prefix,Footprint,Layer,PosX_mm,PosY_mm,Orientation_deg,PadCount,DNP
+U1,AMS1117-3.3,U,Package_TO_SOT_SMD:SOT-223-3_TabPin2,F.Cu,70.000,65.000,0.0,4,NO
+C1,10uF,C,Capacitor_SMD:C_1206_3216Metric,F.Cu,62.000,65.000,0.0,2,NO
+C2,22uF,C,Capacitor_SMD:C_0805_2012Metric,F.Cu,78.000,65.000,0.0,2,NO
+D1,B5819W,D,Diode_SMD:D_SOD-123,F.Cu,58.000,65.000,0.0,2,NO
+R1,1k,R,Resistor_SMD:R_0603_1608Metric,F.Cu,85.000,62.000,0.0,2,NO
+D2,GREEN,D,LED_SMD:LED_0603_1608Metric,F.Cu,85.000,68.000,0.0,2,NO
+J1,Input_Power,J,TerminalBlock:TerminalBlock_bornier-2_P5.08mm,F.Cu,54.000,72.000,0.0,2,NO
+J2,Output_3V3,J,Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical,F.Cu,90.000,65.000,0.0,2,NO

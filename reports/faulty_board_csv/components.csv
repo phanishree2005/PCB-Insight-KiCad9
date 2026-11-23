@@ -1,0 +1,7 @@
+Reference,Value,Prefix,Footprint,Layer,PosX_mm,PosY_mm,Orientation_deg,PadCount,DNP
+R?,10k,R,Resistor_SMD:R_0805_2012Metric,F.Cu,100.000,50.000,0.0,2,NO
+C1,100nF,C,Capacitor_SMD:C_0805_2012Metric,F.Cu,110.000,50.000,0.0,2,NO
+C1,220nF,C,Capacitor_SMD:C_0805_2012Metric,F.Cu,120.000,50.000,0.0,2,NO
+D1,~,D,Diode_SMD:D_SOD-123,F.Cu,100.000,60.000,0.0,2,NO
+U2,ATTINY85,U,,F.Cu,110.000,60.000,0.0,1,NO
+Q1,2N3904,Q,Package_TO_SOT_SMD:SOT-23,F.Cu,120.000,60.000,0.0,3,NO
