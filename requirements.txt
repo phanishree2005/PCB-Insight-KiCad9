@@ -1,0 +1,17 @@
+# PCB Insight KiCad 9 Requirements
+# Core Dependencies
+kicad-python>=0.8.0; python_version >= "3.9"
+protobuf>=5.29.0,<6.0
+pynng>=0.9.0,<0.10.0
+jsonschema>=4.23.0,<5.0
+
+# Optional GUI support (for native desktop UI window if not running web/html report view)
+# Note: wxPython is pre-bundled in KiCad's internal Python interpreter for legacy action plugins
+# wxPython>=4.2.0
+
+# Development, Testing, and Quality Assurance
+pytest>=8.0.0
+pytest-cov>=5.0.0
+black>=24.0.0
+flake8>=7.0.0
+mypy>=1.9.0
