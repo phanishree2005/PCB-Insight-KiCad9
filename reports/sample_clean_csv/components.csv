@@ -1,0 +1,8 @@
+Reference,Value,Prefix,Footprint,Layer,PosX_mm,PosY_mm,Orientation_deg,PadCount,DNP
+R1,10k,R,Resistor_SMD:R_0805_2012Metric,F.Cu,100.000,50.000,0.0,2,NO
+R2,4.7k,R,Resistor_SMD:R_0805_2012Metric,F.Cu,110.000,50.000,0.0,2,NO
+C1,100nF,C,Capacitor_SMD:C_0805_2012Metric,F.Cu,100.000,60.000,0.0,2,NO
+C2,10uF,C,Capacitor_SMD:C_1206_3216Metric,F.Cu,110.000,60.000,0.0,2,NO
+U1,NE555P,U,Package_SO:SOIC-8_3.9x4.9mm_P1.27mm,F.Cu,125.000,55.000,0.0,8,NO
+J1,Power_In,J,Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical,F.Cu,90.000,55.000,0.0,2,NO
+TP1,TestPoint,TP,TestPoint:TestPoint_Pad_D1.0mm,F.Cu,135.000,55.000,0.0,1,NO

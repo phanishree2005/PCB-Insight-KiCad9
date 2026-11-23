@@ -1,0 +1,20 @@
+{
+  "$schema": "https://go.kicad.org/api/schemas/v1",
+  "identifier": "org.fossee.pcb_insight",
+  "name": "PCB Insight",
+  "description": "Intelligent PCB Design Analysis, Connectivity Auditing, and Engineering Reports",
+  "runtime": {
+    "type": "python",
+    "min_version": "3.9"
+  },
+  "actions": [
+    {
+      "identifier": "analyze_board",
+      "name": "Analyze PCB Design",
+      "description": "Audit components, connectivity, and generate engineering reports",
+      "scopes": ["pcb"],
+      "entrypoint": "pcb_insight/plugin_entry.py",
+      "show-button": true
+    }
+  ]
+}
