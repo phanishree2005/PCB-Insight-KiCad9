@@ -4,6 +4,7 @@ Built using standard Python tkinter & ttk for maximum cross-platform
 compatibility without requiring external binary GUI packages like wxPython or PyQt.
 """
 
+import math
 import sys
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
@@ -109,6 +110,11 @@ class PCBInsightUI(tk.Tk):
         self.notebook.add(self.tab_connectivity, text="  Net Connectivity  ")
         self._build_connectivity_tab(self.tab_connectivity)
 
+        # Tab 4: 2D Board Layout & Wires Visualizer
+        self.tab_visualizer = ttk.Frame(self.notebook)
+        self.notebook.add(self.tab_visualizer, text="  2D Board Layout & Wires  ")
+        self._build_visualizer_tab(self.tab_visualizer)
+
         # 4. Bottom Action Bar
         bottom = ttk.Frame(self, padding="15 8 15 12")
         bottom.pack(fill=tk.X)
@@ -129,7 +135,7 @@ class PCBInsightUI(tk.Tk):
 
     def _build_findings_tab(self, parent):
         pane = ttk.PanedWindow(parent, orient=tk.VERTICAL)
-        pane.pack(fill=tk.BOTH, expand=True, padding=5)
+        pane.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
 
         # Treeview
         tree_frame = ttk.Frame(pane)
@@ -219,6 +225,154 @@ class PCBInsightUI(tk.Tk):
         self.tree_nets.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         sb.pack(side=tk.RIGHT, fill=tk.Y)
 
+    def _build_visualizer_tab(self, parent):
+        top_bar = ttk.Frame(parent, padding="8 4 8 4")
+        top_bar.pack(fill=tk.X)
+
+        ttk.Label(top_bar, text="Legend: ", font=("Segoe UI", 9, "bold")).pack(side=tk.LEFT)
+        ttk.Label(top_bar, text="■ Edge.Cuts (Outline) ", foreground="#eab308").pack(side=tk.LEFT, padx=3)
+        ttk.Label(top_bar, text="■ F.Cu Tracks (Wires) ", foreground="#ef4444").pack(side=tk.LEFT, padx=3)
+        ttk.Label(top_bar, text="■ B.Cu Tracks ", foreground="#06b6d4").pack(side=tk.LEFT, padx=3)
+        ttk.Label(top_bar, text="■ Vias ", foreground="#f59e0b").pack(side=tk.LEFT, padx=3)
+        ttk.Label(top_bar, text="·· Ratsnest Airwires ", foreground="#38bdf8").pack(side=tk.LEFT, padx=3)
+        ttk.Button(top_bar, text="Redraw", command=self._render_canvas).pack(side=tk.RIGHT, padx=4)
+
+        canvas_frame = ttk.Frame(parent)
+        canvas_frame.pack(fill=tk.BOTH, expand=True)
+
+        self.canvas = tk.Canvas(canvas_frame, bg="#0f172a", highlightthickness=0)
+        self.canvas.pack(fill=tk.BOTH, expand=True)
+        self.canvas.bind("<Configure>", lambda e: self._render_canvas())
+
+    def _render_canvas(self):
+        if not self.result or not hasattr(self, "canvas"):
+            return
+        canvas = self.canvas
+        canvas.delete("all")
+
+        board = self.result.board
+        cw = canvas.winfo_width()
+        ch = canvas.winfo_height()
+        if cw < 50:
+            cw = 800
+        if ch < 50:
+            ch = 500
+
+        coords_x = []
+        coords_y = []
+
+        if board.has_edge_cuts and board.bounding_box != (0.0, 0.0, 0.0, 0.0):
+            coords_x.extend([board.bounding_box[0], board.bounding_box[2]])
+            coords_y.extend([board.bounding_box[1], board.bounding_box[3]])
+
+        for c in board.components:
+            coords_x.append(c.position_x_mm)
+            coords_y.append(c.position_y_mm)
+            for p in c.pads:
+                coords_x.append(c.position_x_mm + p.position_x_mm)
+                coords_y.append(c.position_y_mm + p.position_y_mm)
+
+        for t in board.tracks:
+            coords_x.extend([t.start_x_mm, t.end_x_mm])
+            coords_y.extend([t.start_y_mm, t.end_y_mm])
+
+        for v in board.vias:
+            coords_x.append(v.position_x_mm)
+            coords_y.append(v.position_y_mm)
+
+        if not coords_x or not coords_y:
+            canvas.create_text(
+                cw // 2, ch // 2,
+                text="No layout geometry found on board",
+                fill="#64748b", font=("Segoe UI", 12)
+            )
+            return
+
+        min_x, max_x = min(coords_x), max(coords_x)
+        min_y, max_y = min(coords_y), max(coords_y)
+        bw = max(15.0, max_x - min_x)
+        bh = max(15.0, max_y - min_y)
+
+        margin = 50
+        scale = min((cw - 2 * margin) / bw, (ch - 2 * margin) / bh)
+        offset_x = (cw - bw * scale) / 2
+        offset_y = (ch - bh * scale) / 2
+
+        def tx(x):
+            return offset_x + (x - min_x) * scale
+
+        def ty(y):
+            return offset_y + (y - min_y) * scale
+
+        # Grid lines
+        grid_step = 10.0
+        gx = math.floor(min_x / grid_step) * grid_step
+        while gx <= max_x + grid_step:
+            canvas.create_line(tx(gx), 0, tx(gx), ch, fill="#1e293b", dash=(1, 5))
+            gx += grid_step
+
+        gy = math.floor(min_y / grid_step) * grid_step
+        while gy <= max_y + grid_step:
+            canvas.create_line(0, ty(gy), cw, ty(gy), fill="#1e293b", dash=(1, 5))
+            gy += grid_step
+
+        # 1. Edge.Cuts Outline
+        if board.has_edge_cuts:
+            bx1, by1 = tx(board.bounding_box[0]), ty(board.bounding_box[1])
+            bx2, by2 = tx(board.bounding_box[2]), ty(board.bounding_box[3])
+            canvas.create_rectangle(bx1, by1, bx2, by2, outline="#facc15", width=2)
+            canvas.create_text(
+                bx1 + 10, by1 + 10,
+                text=f"Edge.Cuts Boundary: {board.dimensions_mm[0]} x {board.dimensions_mm[1]} mm",
+                fill="#facc15", anchor="nw", font=("Segoe UI", 8)
+            )
+
+        # 2. Routed Tracks (Copper Wires)
+        for t in board.tracks:
+            color = "#ef4444" if "F.Cu" in t.layer else "#06b6d4"
+            w = max(2, int(t.width_mm * scale))
+            canvas.create_line(tx(t.start_x_mm), ty(t.start_y_mm), tx(t.end_x_mm), ty(t.end_y_mm), fill=color, width=w, capstyle=tk.ROUND)
+
+        # 3. Vias
+        for v in board.vias:
+            vx, vy = tx(v.position_x_mm), ty(v.position_y_mm)
+            r = max(5, int(v.size_mm * scale / 2))
+            canvas.create_oval(vx - r, vy - r, vx + r, vy + r, fill="#f59e0b", outline="#fbbf24", width=1)
+            dr = max(2, int(v.drill_mm * scale / 2))
+            canvas.create_oval(vx - dr, vy - dr, vx + dr, vy + dr, fill="#0f172a", outline="#f59e0b", width=1)
+
+        # 4. Components & Pads
+        pad_positions = {}
+        for c in board.components:
+            cx, cy = tx(c.position_x_mm), ty(c.position_y_mm)
+
+            fw = max(22, int(10.0 * scale))
+            fh = max(22, int(8.0 * scale))
+            canvas.create_rectangle(cx - fw / 2, cy - fh / 2, cx + fw / 2, cy + fh / 2, outline="#475569", fill="#1e293b", width=1)
+            canvas.create_text(cx, cy - fh / 2 - 9, text=c.reference, fill="#f8fafc", font=("Segoe UI", 9, "bold"))
+            if c.value:
+                canvas.create_text(cx, cy + fh / 2 + 9, text=c.value, fill="#94a3b8", font=("Segoe UI", 8))
+
+            for p in c.pads:
+                px = tx(c.position_x_mm + p.position_x_mm)
+                py = ty(c.position_y_mm + p.position_y_mm)
+                pad_positions[(c.reference, p.pad_number)] = (px, py)
+                pw = max(6, int((p.size_x_mm or 1.2) * scale))
+                ph = max(6, int((p.size_y_mm or 1.2) * scale))
+
+                pcolor = "#fbbf24" if p.pad_type == "THRU_HOLE" else ("#f87171" if "F.Cu" in p.layers else "#38bdf8")
+                canvas.create_rectangle(px - pw / 2, py - ph / 2, px + pw / 2, py + ph / 2, fill=pcolor, outline="#ffffff", width=1)
+                canvas.create_text(px, py, text=p.pad_number, fill="#0f172a", font=("Segoe UI", 7, "bold"))
+
+        # 5. Ratsnest Airwires (Unrouted Net Connections)
+        for net_name, net in board.nets.items():
+            if net.pad_count >= 2:
+                points = [pad_positions[key] for key in net.pads if key in pad_positions]
+                for i in range(len(points) - 1):
+                    p1 = points[i]
+                    p2 = points[i + 1]
+                    canvas.create_line(p1[0], p1[1], p2[0], p2[1], fill="#38bdf8", dash=(3, 3), width=1)
+
     def run_analysis(self, file_path: Optional[str]):
         """Executes the analysis engine and populates all UI components."""
         self.lbl_status.config(text="Analyzing board...")
@@ -282,6 +436,9 @@ class PCBInsightUI(tk.Tk):
                 tk.END,
                 values=(name, net.code, type_str, net.pad_count, pins_str),
             )
+
+        # Render 2D Board Canvas
+        self._render_canvas()
 
     def _on_finding_select(self, event):
         sel = self.tree_findings.selection()
